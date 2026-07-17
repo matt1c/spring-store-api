@@ -9,6 +9,8 @@ import com.marsmars.repositories.RoleRepository;
 import com.marsmars.repositories.UserRepository;
 import com.marsmars.security.UserDetailsImpl;
 import com.marsmars.util.JwtUtil;
+import com.marsmars.util.exceptions.RoleNotFound;
+import com.marsmars.util.exceptions.UserEmailAlreadyTaken;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -73,27 +75,47 @@ public class AuthServiceTest {
 
     @Test
     void register_shouldReturnToken_withCredentialsValid() {
-        RegisterRequest req = new RegisterRequest("Thomas", "thomas@gmail.com", "123123");
-        User user = new User(1L, "Thomas", "123123", "thomas@gmail.com", true);
-        Role role = new Role("ROLE_USER");
+        RegisterRequest request = new RegisterRequest("john", "john@mail.com", "password");
+        Role userRole = new Role("ROLE_USER");
 
-        Mockito.when(userRepository.existsByEmail("thomas@gmail.com")).thenReturn(false);
-        Mockito.when(userRepository.save(any(User.class))).thenReturn(user);
+        Mockito.when(userRepository.existsByEmail("john@mail.com")).thenReturn(false);
         Mockito.when(passwordEncoder.encode("password")).thenReturn("hashedPassword");
-        Mockito.when(roleRepository.findByName("ROLE_USER")).then(Optional.of(role));
+        Mockito.when(roleRepository.findByName("ROLE_USER")).thenReturn(Optional.of(userRole));
         Mockito.when(jwtUtil.generateToken(anyMap(), any(UserDetailsImpl.class)))
                 .thenReturn("mocked-jwt-token");
 
-
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        AuthResponse resp = authService.register(req);
+
+        AuthResponse response = authService.register(request);
 
         Mockito.verify(userRepository).save(userCaptor.capture());
         User savedUser = userCaptor.getValue();
 
         Assertions.assertEquals("john@mail.com", savedUser.getEmail());
         Assertions.assertEquals("hashedPassword", savedUser.getPassword());
-        Assertions.assertTrue(savedUser.getRoles().contains(role));
-        Assertions.assertEquals("mocked-jwt-token", resp.getToken());
+        Assertions.assertTrue(savedUser.getRoles().contains(userRole));
+        Assertions.assertEquals("mocked-jwt-token", response.getToken());
+    }
+
+    @Test
+    void register_shouldThrowUserEmailAlreadyTaken_whenEmailExists() {
+        RegisterRequest request = new RegisterRequest("john", "john@mail.com", "password");
+
+        Mockito.when(userRepository.existsByEmail("john@mail.com")).thenReturn(true);
+
+        Assertions.assertThrows(UserEmailAlreadyTaken.class, () -> authService.register(request));
+        Mockito.verify(userRepository, Mockito.never()).save(any());
+    }
+
+    @Test
+    void register_shouldThrowRoleNotFound_whenRoleMissing() {
+        RegisterRequest request = new RegisterRequest("john", "john@mail.com", "password");
+
+        Mockito.when(userRepository.existsByEmail("john@mail.com")).thenReturn(false);
+        Mockito.when(passwordEncoder.encode("password")).thenReturn("hashedPassword");
+        Mockito.when(roleRepository.findByName("ROLE_USER")).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(RoleNotFound.class, () -> authService.register(request));
+        Mockito.verify(userRepository, Mockito.never()).save(any());
     }
 }
