@@ -5,6 +5,7 @@ import com.marsmars.dtos.user.UserResponse;
 import com.marsmars.models.Role;
 import com.marsmars.models.User;
 import com.marsmars.repositories.UserRepository;
+import com.marsmars.util.exceptions.UserEmailAlreadyTaken;
 import com.marsmars.util.exceptions.UserNotFound;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,8 @@ public class ProfileService {
     public void update(UserRequest userRequest, Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFound("User not found with this id"));
+        if(userRepository.existsByEmail(userRequest.getEmail()))
+            throw new UserEmailAlreadyTaken("User with this email already exist");
         user.setEmail(userRequest.getEmail());
         user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
         user.setUsername(userRequest.getUsername());

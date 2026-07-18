@@ -45,11 +45,12 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body("Order has been created");
     }
 
-    @PreAuthorize("hasRole('MODERATOR')")
-    @PostMapping("/change-status")
-    public ResponseEntity<String> changeStatus(@AuthenticationPrincipal UserDetailsImpl userDetails,
-                                               @RequestBody String status) {
-        orderService.changeStatus(userDetails.user().getId(), OrderStatus.valueOf(status));
+    @PreAuthorize("hasRole('MANAGER')")
+    @PostMapping("/{id}/change-status/{status}")
+    public ResponseEntity<String> changeStatus(@PathVariable("id") Long orderId,
+                                               @PathVariable("status") String status) {
+        System.out.println(OrderStatus.valueOf(status.toUpperCase()));
+        orderService.changeStatus(orderId, OrderStatus.valueOf(status.toUpperCase()));
         return ResponseEntity.status(HttpStatus.OK).body("Order status changed");
     }
 }

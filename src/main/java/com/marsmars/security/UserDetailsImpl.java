@@ -1,7 +1,6 @@
 package com.marsmars.security;
 
 import com.marsmars.models.User;
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,7 +17,7 @@ public record UserDetailsImpl(User user) implements UserDetails {
     }
 
     @Override
-    public @Nullable String getPassword() {
+    public String getPassword() {
         return user.getPassword();
     }
 

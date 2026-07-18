@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,5 +23,5 @@ public class ProductRequest {
     private Integer quantity;
 
     @Min(value = 1/10, message = "Price can't be less than 1 cent")
-    private Double price;
+    private BigDecimal price;
 }
