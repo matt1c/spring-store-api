@@ -4,10 +4,12 @@ import com.marsmars.dtos.order.OrderRequest;
 import com.marsmars.dtos.order.OrderResponse;
 import com.marsmars.security.UserDetailsImpl;
 import com.marsmars.services.OrderService;
+import com.marsmars.util.OrderStatus;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,5 +43,13 @@ public class OrderController {
         orderRequest.setUserId(userDetails.user().getId());
         orderService.save(orderRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body("Order has been created");
+    }
+
+    @PreAuthorize("hasRole('MODERATOR')")
+    @PostMapping("/change-status")
+    public ResponseEntity<String> changeStatus(@AuthenticationPrincipal UserDetailsImpl userDetails,
+                                               @RequestBody String status) {
+        orderService.changeStatus(userDetails.user().getId(), OrderStatus.valueOf(status));
+        return ResponseEntity.status(HttpStatus.OK).body("Order status changed");
     }
 }
