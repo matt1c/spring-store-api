@@ -1,0 +1,10 @@
+package com.marsmars.util;
+
+public enum Category {
+    CLOTHING, EQUIPMENT, BOOK,
+    TOYS, HOME, SPORTS,
+    ELECTRONICS, GROCERIES, KITCHEN,
+    BEAUTY, HEALTH, GAMES, MUSIC,
+    PETS, GARDEN, TOOLS, JEWELRY,
+    BAGS, OFFICE, OTHER
+}

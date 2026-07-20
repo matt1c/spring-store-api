@@ -1,7 +1,9 @@
 package com.marsmars.dtos.product;
 
+import com.marsmars.util.Category;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,4 +26,7 @@ public class ProductRequest {
 
     @Min(value = 1/10, message = "Price can't be less than 1 cent")
     private BigDecimal price;
+
+    @NotNull(message = "Category can't be empty")
+    private Category category;
 }

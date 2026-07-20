@@ -1,5 +1,6 @@
 package com.marsmars.models;
 
+import com.marsmars.util.Category;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,4 +30,7 @@ public class Product {
 
     @Column(name = "price")
     private BigDecimal price;
+
+    @Column(name = "category")
+    private Category category;
 }

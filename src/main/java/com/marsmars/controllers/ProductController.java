@@ -3,6 +3,7 @@ package com.marsmars.controllers;
 import com.marsmars.dtos.product.ProductRequest;
 import com.marsmars.dtos.product.ProductResponse;
 import com.marsmars.services.ProductService;
+import com.marsmars.util.Category;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,14 @@ public class ProductController {
     public ResponseEntity<String> create(@RequestBody @Valid ProductRequest request) {
         productService.save(request);
         return ResponseEntity.status(HttpStatus.CREATED).body("Product has been added in catalog");
+    }
+
+    @PreAuthorize("hasRole('MANAGER')")
+    @PostMapping("/{id}/category/{category}")
+    public ResponseEntity<String> changeCategory(@PathVariable("id") Long id,
+                                                 @PathVariable("category") String category) {
+        productService.changeCategory(id, Category.valueOf(category.toUpperCase()));
+        return ResponseEntity.status(HttpStatus.OK).body("Category changed successfully");
     }
 
     @PreAuthorize("hasRole('MANAGER')")

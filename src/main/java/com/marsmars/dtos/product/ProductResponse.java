@@ -18,4 +18,5 @@ public class ProductResponse {
     private String description;
     private Integer quantity;
     private BigDecimal price;
+    private String category;
 }

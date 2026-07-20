@@ -46,7 +46,7 @@ public class OrderController {
     }
 
     @PreAuthorize("hasRole('MANAGER')")
-    @PostMapping("/{id}/change-status/{status}")
+    @PutMapping("/{id}/status/{status}")
     public ResponseEntity<String> changeStatus(@PathVariable("id") Long orderId,
                                                @PathVariable("status") String status) {
         System.out.println(OrderStatus.valueOf(status.toUpperCase()));

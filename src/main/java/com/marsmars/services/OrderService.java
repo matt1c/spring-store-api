@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -54,7 +55,7 @@ public class OrderService {
         order.setCreatedAt(LocalDateTime.now());
         order.setUser(userRepository.findById(orderRequest.getUserId()).orElseThrow());
 
-        double totalSum = 0;
+        BigDecimal totalSum = new BigDecimal(0);
         for (OrderItemRequest itemReq : orderRequest.getItems()) {
             Product product = productRepository.findById(itemReq.getProductId())
                     .orElseThrow(() -> new ProductNotFound("Product not found"));
@@ -73,7 +74,7 @@ public class OrderService {
             item.setPriceAtOrder(product.getPrice());
             order.getItems().add(item);
 
-            totalSum += product.getPrice() * itemReq.getQuantity();
+            totalSum = totalSum.add(product.getPrice().multiply(BigDecimal.valueOf(itemReq.getQuantity())));
         }
 
         for (OrderItem item : order.getItems()) {

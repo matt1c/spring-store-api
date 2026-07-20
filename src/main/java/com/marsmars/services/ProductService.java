@@ -4,6 +4,7 @@ import com.marsmars.dtos.product.ProductRequest;
 import com.marsmars.dtos.product.ProductResponse;
 import com.marsmars.models.Product;
 import com.marsmars.repositories.ProductRepository;
+import com.marsmars.util.Category;
 import com.marsmars.util.exceptions.ProductNotFound;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +34,13 @@ public class ProductService {
         productRepository.save(toModel(productRequest));
     }
 
+    public void changeCategory(Long id, Category category) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFound("Product not found for changing category"));
+        product.setCategory(category);
+        productRepository.save(product);
+    }
+
     public void update(ProductRequest productRequest, Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFound("Product not found"));
@@ -57,6 +65,7 @@ public class ProductService {
         product.setDescription(request.getDescription());
         product.setQuantity(request.getQuantity());
         product.setPrice(request.getPrice());
+        product.setCategory(request.getCategory());
         return product;
     }
 
@@ -67,6 +76,7 @@ public class ProductService {
         response.setDescription(product.getDescription());
         response.setQuantity(product.getQuantity());
         response.setPrice(product.getPrice());
+        response.setCategory(product.getCategory().name());
         return response;
     }
 }
