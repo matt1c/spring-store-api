@@ -36,6 +36,8 @@ public class ProfileService {
         userRepository.save(user);
     }
 
+
+
     public void delete(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFound("User not found"));

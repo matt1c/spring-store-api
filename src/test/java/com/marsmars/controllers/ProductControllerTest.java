@@ -24,6 +24,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -82,9 +83,9 @@ public class ProductControllerTest {
         int pageSize = 10;
         String sortBy = "id";
 
-        ProductResponse resp1 = new ProductResponse(1L, "Hat", "Cowboy hat", 3, 249.9);
-        ProductResponse resp2 = new ProductResponse(2L, "Candy", "Pack of candies", 200, 150.9);
-        ProductResponse resp3 = new ProductResponse(3L, "Boxing gloves", "gloves for boxing, been used", 1, 20.99);
+        ProductResponse resp1 = new ProductResponse(1L, "Hat", "Cowboy hat", 3, BigDecimal.valueOf(230.1), "CLOTHING");
+        ProductResponse resp2 = new ProductResponse(2L, "Candy", "Pack of candies", 200, BigDecimal.valueOf(150.9), "GROCERIES");
+        ProductResponse resp3 = new ProductResponse(3L, "Boxing gloves", "gloves for boxing, been used", 1, BigDecimal.valueOf(20.99), "SPORTS");
 
         List<ProductResponse> content = List.of(resp1, resp2, resp3);
         Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(sortBy).ascending());
@@ -109,7 +110,7 @@ public class ProductControllerTest {
 
         ProductResponse resp = new ProductResponse();
         resp.setId(1L);
-        resp.setPrice(2.0);
+        resp.setPrice(BigDecimal.valueOf(2.0));
         resp.setQuantity(3);
         resp.setName("Hat");
         resp.setDescription("Cowboy hat");
@@ -132,7 +133,7 @@ public class ProductControllerTest {
         ProductRequest req = new ProductRequest();
         req.setName("some product name");
         req.setDescription("some product description");
-        req.setPrice(10.1);
+        req.setPrice(BigDecimal.valueOf(10.1));
         req.setQuantity(100);
 
         Mockito.doNothing().when(productService).save(req);
@@ -168,7 +169,7 @@ public class ProductControllerTest {
         ProductRequest req = new ProductRequest();
         req.setName("some product name");
         req.setDescription("some product description");
-        req.setPrice(10.1);
+        req.setPrice(BigDecimal.valueOf(10.1));
         req.setQuantity(100);
 
         Mockito.doNothing().when(productService).update(req, productId);
@@ -203,7 +204,7 @@ public class ProductControllerTest {
         ProductRequest req = new ProductRequest();
         req.setName("some product name");
         req.setDescription("some product description");
-        req.setPrice(Double.MAX_VALUE + 100.23);
+        req.setPrice(BigDecimal.valueOf(Double.MAX_VALUE + 100.23));
         req.setQuantity(1928371821);
 
         Mockito.doNothing().when(productService).update(req, productId);
@@ -226,7 +227,7 @@ public class ProductControllerTest {
         product.setName("some name");
         product.setDescription("some description");
         product.setId(1L);
-        product.setPrice(123123.1233123);
+        product.setPrice(BigDecimal.valueOf(123123.123123));
 
         Mockito.doNothing().when(productService).delete(productId);
 

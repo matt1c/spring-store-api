@@ -30,4 +30,10 @@ public class AuthController {
     public ResponseEntity<AuthResponse> register(@RequestBody @Valid RegisterRequest registerRequest) {
         return ResponseEntity.status(HttpStatus.OK).body(authService.register(registerRequest));
     }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(@RequestBody @Valid AuthRequest authRequest) {
+        authService.updatePassword(authRequest);
+        return ResponseEntity.status(HttpStatus.OK).body("Password was updated");
+    }
 }

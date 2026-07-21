@@ -11,6 +11,7 @@ import com.marsmars.util.JwtUtil;
 import com.marsmars.util.exceptions.RoleNotFound;
 import com.marsmars.util.exceptions.UserEmailAlreadyTaken;
 import com.marsmars.util.exceptions.UserNotFound;
+import com.marsmars.util.exceptions.UserPasswordIsAlreadyValid;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -72,5 +73,17 @@ public class AuthService {
         String jwtToken = jwtUtil.generateToken(new HashMap<>(), userDetails);
 
         return new AuthResponse(jwtToken);
+    }
+
+    public void updatePassword(AuthRequest authRequest) {
+        User user = userRepository.findUserByUsername(authRequest.getUsername())
+                .orElseThrow(() -> new UserNotFound("User not found"));
+
+        if(passwordEncoder.matches(authRequest.getPassword(), user.getPassword()))
+            throw new UserPasswordIsAlreadyValid("This password is already valid");
+
+        user.setPassword(passwordEncoder.encode(authRequest.getPassword()));
+
+        userRepository.save(user);
     }
 }

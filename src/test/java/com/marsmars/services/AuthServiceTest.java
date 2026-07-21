@@ -11,6 +11,8 @@ import com.marsmars.security.UserDetailsImpl;
 import com.marsmars.util.JwtUtil;
 import com.marsmars.util.exceptions.RoleNotFound;
 import com.marsmars.util.exceptions.UserEmailAlreadyTaken;
+import com.marsmars.util.exceptions.UserNotFound;
+import com.marsmars.util.exceptions.UserPasswordIsAlreadyValid;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -117,5 +119,41 @@ public class AuthServiceTest {
 
         Assertions.assertThrows(RoleNotFound.class, () -> authService.register(request));
         Mockito.verify(userRepository, Mockito.never()).save(any());
+    }
+
+    @Test
+    void updatePassword_Success_ShouldUpdateAndSave() {
+        AuthRequest request = new AuthRequest("john_doe", "new_password123");
+        User existingUser = new User(1L, "john_doe", "old_encoded_password", "john@example.com", true);
+
+        Mockito.when(userRepository.findUserByUsername("john_doe")).thenReturn(Optional.of(existingUser));
+        Mockito.when(passwordEncoder.matches("new_password123", "old_encoded_password")).thenReturn(false);
+        Mockito.when(passwordEncoder.encode("new_password123")).thenReturn("new_encoded_password");
+
+        authService.updatePassword(request);
+
+        Mockito.verify(userRepository).save(existingUser);
+        Assertions.assertEquals("new_encoded_password", existingUser.getPassword());
+    }
+
+    @Test
+    void updatePassword_UserNotFound_ShouldThrowException() {
+        AuthRequest request = new AuthRequest("unknown_user", "password");
+        Mockito.when(userRepository.findUserByUsername("unknown_user")).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(UserNotFound.class, () -> authService.updatePassword(request));
+        Mockito.verify(userRepository, Mockito.never()).save(Mockito.any(User.class));
+    }
+
+    @Test
+    void updatePassword_PasswordAlreadySame_ShouldThrowException() {
+        AuthRequest request = new AuthRequest("john_doe", "same_password");
+        User existingUser = new User(1L, "john_doe", "encoded_same_password", "john@example.com", true);
+
+        Mockito.when(userRepository.findUserByUsername("john_doe")).thenReturn(Optional.of(existingUser));
+        Mockito.when(passwordEncoder.matches("same_password", "encoded_same_password")).thenReturn(true);
+
+        Assertions.assertThrows(UserPasswordIsAlreadyValid.class, () -> authService.updatePassword(request));
+        Mockito.verify(userRepository, Mockito.never()).save(Mockito.any(User.class));
     }
 }

@@ -22,6 +22,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
@@ -172,5 +174,36 @@ public class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(req))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
+    }
+
+    // CHANGING PASSWORD
+
+    @Test
+    void changePassword_ValidRequest_ReturnsOk() throws Exception {
+        AuthRequest request = new AuthRequest("john doe", "securePassword123");
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/change-password")
+                        .with(csrf())
+                        .with(user(userDetails))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string("Password was updated"));
+
+        Mockito.verify(authService).updatePassword(Mockito.any(AuthRequest.class));
+    }
+
+    @Test
+    void changePassword_InvalidRequest_ReturnsBadRequest() throws Exception {
+        AuthRequest invalidRequest = new AuthRequest("john_doe", "");
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/auth/change-password")
+                        .with(csrf())
+                        .with(user(userDetails))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+
+        Mockito.verify(authService, Mockito.never()).updatePassword(Mockito.any(AuthRequest.class));
     }
 }
