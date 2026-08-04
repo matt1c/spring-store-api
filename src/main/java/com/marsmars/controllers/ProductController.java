@@ -22,9 +22,8 @@ public class ProductController {
 
     @GetMapping
     public Page<ProductResponse> findAll(@RequestParam(name = "page", defaultValue = "0") int pageNum,
-                                         @RequestParam(name = "size", defaultValue = "10") int pageSize,
-                                         @RequestParam(name = "sort", defaultValue = "id") String sortBy) {
-        return productService.findAll(pageNum, pageSize, sortBy);
+                                         @RequestParam(name = "size", defaultValue = "10") int pageSize) {
+        return productService.findAll(pageNum, pageSize);
     }
 
     @GetMapping("/{id}")

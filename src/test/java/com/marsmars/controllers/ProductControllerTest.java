@@ -81,17 +81,16 @@ public class ProductControllerTest {
     void findAll_shouldReturnList() throws Exception {
         int pageNum = 0;
         int pageSize = 10;
-        String sortBy = "id";
 
         ProductResponse resp1 = new ProductResponse(1L, "Hat", "Cowboy hat", 3, BigDecimal.valueOf(230.1), "CLOTHING");
         ProductResponse resp2 = new ProductResponse(2L, "Candy", "Pack of candies", 200, BigDecimal.valueOf(150.9), "GROCERIES");
         ProductResponse resp3 = new ProductResponse(3L, "Boxing gloves", "gloves for boxing, been used", 1, BigDecimal.valueOf(20.99), "SPORTS");
 
         List<ProductResponse> content = List.of(resp1, resp2, resp3);
-        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(sortBy).ascending());
+        Pageable pageable = PageRequest.of(pageNum, pageSize);
         Page<ProductResponse> page = new PageImpl<>(content, pageable, content.size());
 
-        Mockito.when(productService.findAll(pageNum, pageSize, sortBy))
+        Mockito.when(productService.findAll(pageNum, pageSize))
                 .thenReturn(page);
 
         mockMvc.perform(get("/api/products")

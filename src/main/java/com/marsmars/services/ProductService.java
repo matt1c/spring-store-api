@@ -9,7 +9,6 @@ import com.marsmars.util.exceptions.ProductNotFound;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,8 +19,8 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    public Page<ProductResponse> findAll(int pageNum, int pageSize, String sortBy) {
-        Pageable pageable = PageRequest.of(pageNum, pageSize, Sort.by(sortBy).ascending());
+    public Page<ProductResponse> findAll(int pageNum, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNum, pageSize);
         return productRepository.findAll(pageable).map(this::toResponse);
     }
 

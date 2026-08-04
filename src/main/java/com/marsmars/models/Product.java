@@ -2,6 +2,7 @@ package com.marsmars.models;
 
 import com.marsmars.util.Category;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Product {
 
     @Id
@@ -32,5 +34,6 @@ public class Product {
     private BigDecimal price;
 
     @Column(name = "category")
+    @Enumerated(EnumType.STRING)
     private Category category;
 }
