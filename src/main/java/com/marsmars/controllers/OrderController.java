@@ -48,9 +48,8 @@ public class OrderController {
     @PreAuthorize("hasRole('MANAGER')")
     @PutMapping("/{id}/status/{status}")
     public ResponseEntity<String> changeStatus(@PathVariable("id") Long orderId,
-                                               @PathVariable("status") String status) {
-        System.out.println(OrderStatus.valueOf(status.toUpperCase()));
-        orderService.changeStatus(orderId, OrderStatus.valueOf(status.toUpperCase()));
+                                               @PathVariable("status") OrderStatus status) {
+        orderService.changeStatus(orderId, status);
         return ResponseEntity.status(HttpStatus.OK).body("Order status changed");
     }
 }

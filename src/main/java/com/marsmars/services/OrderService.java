@@ -14,6 +14,7 @@ import com.marsmars.util.OrderStatus;
 import com.marsmars.util.exceptions.InsufficientStockException;
 import com.marsmars.util.exceptions.OrderNotFound;
 import com.marsmars.util.exceptions.ProductNotFound;
+import com.marsmars.util.exceptions.UserNotFound;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -53,7 +54,7 @@ public class OrderService {
         Order order = new Order();
         order.setStatus(OrderStatus.PENDING);
         order.setCreatedAt(LocalDateTime.now());
-        order.setUser(userRepository.findById(orderRequest.getUserId()).orElseThrow());
+        order.setUser(userRepository.findById(orderRequest.getUserId()).orElseThrow(() -> new UserNotFound("User not found")));
 
         BigDecimal totalSum = new BigDecimal(0);
         for (OrderItemRequest itemReq : orderRequest.getItems()) {
