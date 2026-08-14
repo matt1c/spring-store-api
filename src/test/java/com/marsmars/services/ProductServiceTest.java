@@ -36,7 +36,7 @@ public class ProductServiceTest {
     void findAll_shouldReturnListOfProducts_whenProductsAreExisting() {
         List<Product> products =
                 List.of(new Product(1L, "Pack of candies", "100 candies",
-                        100, BigDecimal.valueOf(50.0), Category.GROCERIES),
+                                100, BigDecimal.valueOf(50.0), Category.GROCERIES),
                         new Product(2L, "Mouse", "game mouse logitech g102",
                                 120, BigDecimal.valueOf(20), Category.GAMES));
 
@@ -71,9 +71,9 @@ public class ProductServiceTest {
     @Test
     void findAll_shouldThrowException_whenRepositoryFails() {
         Mockito.when(productRepository.findAll(any(Pageable.class)))
-                .thenThrow(new RuntimeException("Database error")); // Или NullPointerException, если это нужно
+                .thenThrow(new NullPointerException("Database error")); // Или NullPointerException, если это нужно
 
-        Assertions.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(NullPointerException.class, () -> {
             productService.findAll(0, 10);
         });
 

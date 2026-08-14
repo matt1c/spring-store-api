@@ -7,6 +7,7 @@ import com.marsmars.models.Role;
 import com.marsmars.models.User;
 import com.marsmars.security.UserDetailsImpl;
 import com.marsmars.services.ProductService;
+import com.marsmars.util.Category;
 import com.marsmars.util.JwtAuthFilter;
 import com.marsmars.util.JwtUtil;
 import com.marsmars.util.exceptions.ProductNotFound;
@@ -18,7 +19,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -95,8 +99,8 @@ public class ProductControllerTest {
 
         mockMvc.perform(get("/api/products")
                         .contentType(MediaType.APPLICATION_JSON)
-                .with(user(userDetails))
-                .accept(MediaType.APPLICATION_JSON))
+                        .with(user(userDetails))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.content").isArray());
     }
@@ -134,13 +138,14 @@ public class ProductControllerTest {
         req.setDescription("some product description");
         req.setPrice(BigDecimal.valueOf(10.1));
         req.setQuantity(100);
+        req.setCategory(Category.OTHER);
 
         Mockito.doNothing().when(productService).save(req);
 
         mockMvc.perform(post("/api/products")
-                .with(user(userDetails))
+                        .with(user(userDetails))
                         .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isCreated())
                 .andExpect(content().string("Product has been added in catalog"));
@@ -153,10 +158,10 @@ public class ProductControllerTest {
         Mockito.doNothing().when(productService).save(req);
 
         mockMvc.perform(post("/api/products")
-                .with(user(userDetails))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(req)))
+                        .with(user(userDetails))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -170,7 +175,8 @@ public class ProductControllerTest {
         req.setDescription("some product description");
         req.setPrice(BigDecimal.valueOf(10.1));
         req.setQuantity(100);
-
+        req.setCategory(Category.OTHER);
+        
         Mockito.doNothing().when(productService).update(req, productId);
 
         mockMvc.perform(put("/api/products/{id}", productId)
@@ -205,6 +211,7 @@ public class ProductControllerTest {
         req.setDescription("some product description");
         req.setPrice(BigDecimal.valueOf(Double.MAX_VALUE + 100.23));
         req.setQuantity(1928371821);
+        req.setCategory(Category.OTHER);
 
         Mockito.doNothing().when(productService).update(req, productId);
 
@@ -231,10 +238,10 @@ public class ProductControllerTest {
         Mockito.doNothing().when(productService).delete(productId);
 
         mockMvc.perform(delete("/api/products/{id}", productId)
-                .with(user(userDetails))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(product)))
+                        .with(user(userDetails))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isOk());
     }
 
@@ -246,7 +253,7 @@ public class ProductControllerTest {
                 .when(productService).delete(nonExistingId);
 
         mockMvc.perform(delete("/api/products/{id}", nonExistingId)
-                .with(csrf())
+                        .with(csrf())
                         .with(user(userDetails)))
                 .andExpect(status().isNotFound());
 

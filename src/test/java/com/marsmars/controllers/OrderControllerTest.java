@@ -32,7 +32,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -81,9 +81,9 @@ public class OrderControllerTest {
                 .thenReturn(page);
 
         mockMvc.perform(get("/api/orders")
-                .with(user(customUserDetails))
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
+                        .with(user(customUserDetails))
+                        .with(csrf())
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.content[0].id").value(5))
@@ -132,9 +132,9 @@ public class OrderControllerTest {
                 .thenReturn(resp);
 
         mockMvc.perform(get("/api/orders/{id}", 5L)
-                .with(user(customUserDetails))
-                .with(csrf())
-                .accept(MediaType.APPLICATION_JSON))
+                        .with(user(customUserDetails))
+                        .with(csrf())
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.status").value(OrderStatus.PENDING.name()))
@@ -146,13 +146,13 @@ public class OrderControllerTest {
     }
 
     @Test
-    void findOne_shouldThrowException_whenOrderIsNotExisting() throws Exception {
+    void findOne_shouldThrowException_whenOrderNotExisting() throws Exception {
         when(orderService.findOne(eq(123L), eq(1L)))
                 .thenThrow(OrderNotFound.class);
 
         mockMvc.perform(get("/api/orders/{id}", 123L)
-                .with(user(customUserDetails))
-                .with(csrf()))
+                        .with(user(customUserDetails))
+                        .with(csrf()))
                 .andExpect(status().isNotFound());
 
         verify(orderService, times(1)).findOne(eq(123L), eq(1L));
@@ -179,8 +179,8 @@ public class OrderControllerTest {
         String jsonRequest = objectMapper.writeValueAsString(req);
 
         mockMvc.perform(post("/api/orders")
-                .with(user(customUserDetails))
-                .with(csrf())
+                        .with(user(customUserDetails))
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonRequest))
                 .andExpect(status().isCreated())
@@ -199,10 +199,10 @@ public class OrderControllerTest {
         String jsonRequest = objectMapper.writeValueAsString(req);
 
         mockMvc.perform(post("/api/orders")
-                .with(user(customUserDetails))
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonRequest))
+                        .with(user(customUserDetails))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> assertInstanceOf(MethodArgumentNotValidException.class, result.getResolvedException()));
 
@@ -215,8 +215,8 @@ public class OrderControllerTest {
         doNothing().when(orderService).changeStatus(1L, OrderStatus.COMING);
 
         mockMvc.perform(put("/api/orders/{id}/status/{status}", 1L, "COMING")
-                .with(user(customUserDetails))
-                .with(csrf()))
+                        .with(user(customUserDetails))
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN_VALUE))
                 .andExpect(content().string("Order status changed"));
@@ -227,9 +227,9 @@ public class OrderControllerTest {
     @Test
     void changeStatus_shouldThrowException_whenStatusIsNotExisting() throws Exception {
         mockMvc.perform(put("/api/orders/{id}/status/{status}", 1L, "STRING")
-                .with(user(customUserDetails))
-                .with(csrf()))
-                        .andExpect(status().isBadRequest());
+                        .with(user(customUserDetails))
+                        .with(csrf()))
+                .andExpect(status().isBadRequest());
 
         verifyNoInteractions(orderService);
     }
