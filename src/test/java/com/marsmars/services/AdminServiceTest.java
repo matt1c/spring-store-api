@@ -50,7 +50,7 @@ public class AdminServiceTest {
         user.setRoles(List.of(new Role("ROLE_USER"), new Role("ROLE_ADMIN")));
     }
 
-
+    // FIND ALL
     @Test
     void findAll_shouldReturnPage_whenPageNotEmpty() {
         // Arrange
@@ -98,6 +98,7 @@ public class AdminServiceTest {
         assertEquals(0, result.getTotalElements());
     }
 
+    // FIND ONE
     @Test
     void findOne_shouldReturnUser_whenUserIsExisting() {
         // Arrange
@@ -127,6 +128,7 @@ public class AdminServiceTest {
         verify(userRepository, times(1)).findById(999L);
     }
 
+    // BAN
     @Test
     void banUser_shouldBanUser_whenUserIsEnabled() {
         // Arrange
@@ -145,7 +147,7 @@ public class AdminServiceTest {
     }
 
     @Test
-    void banUser_shouldThrowException_whenUserIsUnabled() {
+    void banUser_shouldThrowException_whenUserIsDisabled() {
         // Arrange
         user.setEnabled(false);
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -154,5 +156,58 @@ public class AdminServiceTest {
         UserAlreadyBanOrUnbanned ex = assertThrows(UserAlreadyBanOrUnbanned.class, () -> adminService.banUser(1L));
         assertEquals("User is already banned", ex.getMessage());
         verify(userRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void banUser_shouldThrowException_whenUserNotFound() {
+        // Arrange
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        UserNotFound ex = assertThrows(UserNotFound.class, () -> adminService.banUser(999L));
+        assertEquals("User not found for banning", ex.getMessage());
+        verify(userRepository, times(1)).findById(999L);
+    }
+
+    // UNBAN
+    @Test
+    void unbanUser_shouldUnbanUser_whenUserIsDisabled() {
+        // Arrange
+        user.setEnabled(false);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenReturn(user);
+
+        // Act
+        adminService.unbanUser(user.getId());
+
+        // Assert
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+        User userForAssert = userCaptor.getValue();
+        assertTrue(userForAssert.isEnabled());
+        verify(userRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void unbanUser_shouldThrowException_whenUserIsEnabled() {
+        // Arrange
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        // Act & Assert
+        UserAlreadyBanOrUnbanned ex = assertThrows(UserAlreadyBanOrUnbanned.class,
+                () -> adminService.unbanUser(1L));
+        assertEquals("User is already unbanned", ex.getMessage());
+        verify(userRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void unbanUser_shouldThrowException_whenUserNotFound() {
+        // Arrange
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        UserNotFound ex = assertThrows(UserNotFound.class, () -> adminService.unbanUser(999L));
+        assertEquals("User not found for banning", ex.getMessage());
+        verify(userRepository, times(1)).findById(999L);
     }
 }

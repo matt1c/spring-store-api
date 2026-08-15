@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -21,8 +22,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductServiceTest {
@@ -43,7 +46,7 @@ public class ProductServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Product> productPage = new PageImpl<>(products, pageable, products.size());
 
-        Mockito.when(productRepository.findAll(pageable)).thenReturn(productPage);
+        when(productRepository.findAll(pageable)).thenReturn(productPage);
 
         Page<ProductResponse> result = productService.findAll(0, 10);
 
@@ -58,7 +61,7 @@ public class ProductServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Product> productPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
 
-        Mockito.when(productRepository.findAll(pageable))
+        when(productRepository.findAll(pageable))
                 .thenReturn(productPage);
 
         Page<ProductResponse> result = productService.findAll(0, 10);
@@ -70,10 +73,10 @@ public class ProductServiceTest {
 
     @Test
     void findAll_shouldThrowException_whenRepositoryFails() {
-        Mockito.when(productRepository.findAll(any(Pageable.class)))
+        when(productRepository.findAll(any(Pageable.class)))
                 .thenThrow(new NullPointerException("Database error")); // Или NullPointerException, если это нужно
 
-        Assertions.assertThrows(NullPointerException.class, () -> {
+        assertThrows(NullPointerException.class, () -> {
             productService.findAll(0, 10);
         });
 
@@ -85,7 +88,7 @@ public class ProductServiceTest {
         Product product = new Product(1L, "Mouse", "gaming mouse",
                 10, BigDecimal.valueOf(100), Category.GAMES);
 
-        Mockito.when(productRepository.findById(eq(product.getId())))
+        when(productRepository.findById(eq(product.getId())))
                 .thenReturn(Optional.of(product));
 
         ProductResponse resp = productService.findOne(product.getId());
@@ -97,9 +100,9 @@ public class ProductServiceTest {
 
     @Test
     void findOne_shouldThrowException_whenProductIsNotExisting() {
-        Mockito.when(productRepository.findById(999L)).thenReturn(Optional.empty());
+        when(productRepository.findById(999L)).thenReturn(Optional.empty());
 
-        ProductNotFound ex = Assertions.assertThrows(ProductNotFound.class, () -> productService.findOne(999L));
+        ProductNotFound ex = assertThrows(ProductNotFound.class, () -> productService.findOne(999L));
         Assertions.assertEquals("Product not found with this id", ex.getMessage());
 
         Mockito.verify(productRepository, Mockito.times(1)).findById(999L);
@@ -110,7 +113,7 @@ public class ProductServiceTest {
         ProductRequest req = new ProductRequest("Subscription", "sub for youtube premium",
                 1, BigDecimal.valueOf(10), Category.OTHER);
 
-        Mockito.when(productRepository.save(ArgumentMatchers.any(Product.class)))
+        when(productRepository.save(ArgumentMatchers.any(Product.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         productService.save(req);
@@ -127,13 +130,15 @@ public class ProductServiceTest {
 
     @Test
     void save_shouldThrowsException_whenRepositoryThrows() {
-        ProductRequest req = new ProductRequest("", "", -1, BigDecimal.valueOf(-10), null);
+        ProductRequest req = new ProductRequest("invalid product", null, 12, BigDecimal.valueOf(10), Category.OTHER);
+        String predictedMsg = "null value in column \"description\" violates not-null constraint";
 
         Mockito.when(productRepository.save(any(Product.class)))
-                .thenThrow(new NullPointerException("Product is null"));
+                .thenThrow(new DataIntegrityViolationException("null value in column \"description\" violates not-null constraint"));
 
-        Assertions.assertThrows(NullPointerException.class, () -> productService.save(req));
 
+        DataIntegrityViolationException ex = assertThrows(DataIntegrityViolationException.class, () -> productService.save(req));
+        Assertions.assertEquals(predictedMsg, ex.getMessage());
         Mockito.verify(productRepository).save(any(Product.class));
     }
 }

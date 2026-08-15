@@ -2,6 +2,7 @@ package com.marsmars.util;
 
 import com.marsmars.util.exceptions.*;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -39,7 +40,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             SQLException.class, OutOfMemoryError.class, NullPointerException.class,
             ArithmeticException.class, IndexOutOfBoundsException.class,
-            NumberFormatException.class, DataAccessException.class, ClassNotFoundException.class
+            NumberFormatException.class, DataAccessException.class, ClassNotFoundException.class,
+            DataIntegrityViolationException.class
     })
     public ResponseEntity<ApiErrorResponse> handlerInternalServerErrors(Throwable e) {
         ApiErrorResponse resp = new ApiErrorResponse(
