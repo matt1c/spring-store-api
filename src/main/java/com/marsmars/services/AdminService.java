@@ -38,7 +38,7 @@ public class AdminService {
     public void banUser(Long id) {
         User userToBan = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFound("User not found for banning"));
-        if(!userToBan.isEnabled())
+        if (!userToBan.isEnabled())
             throw new UserAlreadyBanOrUnbanned("User is already banned");
         userToBan.setEnabled(false);
         userRepository.save(userToBan);
@@ -47,7 +47,7 @@ public class AdminService {
     public void unbanUser(Long id) {
         User userToUnban = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFound("User not found for banning"));
-        if(userToUnban.isEnabled())
+        if (userToUnban.isEnabled())
             throw new UserAlreadyBanOrUnbanned("User is already unbanned");
         userToUnban.setEnabled(true);
         userRepository.save(userToUnban);
@@ -58,7 +58,7 @@ public class AdminService {
                 .orElseThrow(() -> new RoleNotFound("Role not found"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFound("User not found with this id"));
-        if(user.getRoles().contains(role))
+        if (user.getRoles().contains(role))
             throw new UserRoleAlreadyTaken("User already have this role");
         user.getRoles().add(role);
         userRepository.save(user);

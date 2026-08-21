@@ -81,7 +81,7 @@ public class OrderService {
         for (OrderItem item : order.getItems()) {
             Product product = item.getProduct();
             product.setQuantity(product.getQuantity() - item.getQuantity());
-            productRepository.save(product);
+            throw new RuntimeException("Test transaction exception");
         }
 
         order.setTotalSum(totalSum);

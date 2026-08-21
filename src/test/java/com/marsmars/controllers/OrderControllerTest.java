@@ -14,6 +14,7 @@ import com.marsmars.util.OrderStatus;
 import com.marsmars.util.exceptions.OrderNotFound;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.data.domain.Page;
@@ -32,8 +33,8 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -153,7 +154,8 @@ public class OrderControllerTest {
         mockMvc.perform(get("/api/orders/{id}", 123L)
                         .with(user(customUserDetails))
                         .with(csrf()))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(res -> assertInstanceOf(OrderNotFound.class, res.getResolvedException()));
 
         verify(orderService, times(1)).findOne(eq(123L), eq(1L));
     }
@@ -174,23 +176,22 @@ public class OrderControllerTest {
     void create_shouldReturnOk_withValidRequest() throws Exception {
         OrderItemRequest itemReq = new OrderItemRequest(5L, 3);
         OrderRequest req = new OrderRequest(1L, List.of(itemReq));
-        doNothing().when(orderService).save(any(OrderRequest.class));
-
-        String jsonRequest = objectMapper.writeValueAsString(req);
 
         mockMvc.perform(post("/api/orders")
                         .with(user(customUserDetails))
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(jsonRequest))
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN_VALUE))
                 .andExpect(content().string("Order has been created"));
 
-        verify(orderService).save(argThat(argument ->
-                argument.getUserId().equals(customUserDetails.user().getId()) &&
-                        argument.getItems().equals(req.getItems())
-        ));
+        ArgumentCaptor<OrderRequest> captor = ArgumentCaptor.forClass(OrderRequest.class);
+        verify(orderService).save(captor.capture());
+        OrderRequest reqForAssert = captor.getValue();
+
+        assertEquals(req.getUserId(), reqForAssert.getUserId());
+        assertEquals(req.getItems(), reqForAssert.getItems());
     }
 
     @Test

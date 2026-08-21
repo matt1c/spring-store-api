@@ -28,15 +28,13 @@ public class ProfileService {
     public void update(UserRequest userRequest, Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFound("User not found with this id"));
-        if(userRepository.existsByEmail(userRequest.getEmail()))
+        if (userRepository.existsByEmail(userRequest.getEmail()))
             throw new UserEmailAlreadyTaken("User with this email already exist");
         user.setEmail(userRequest.getEmail());
         user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
         user.setUsername(userRequest.getUsername());
         userRepository.save(user);
     }
-
-
 
     public void delete(Long id) {
         User user = userRepository.findById(id)
