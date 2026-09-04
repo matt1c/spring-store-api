@@ -26,7 +26,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.List;
+import java.util.Set;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -61,7 +61,7 @@ public class AuthControllerTest {
         mockUser.setEnabled(true);
 
         Role role = new Role("ROLE_USER");
-        mockUser.setRoles(List.of(role));
+        mockUser.setRoles(Set.of(role));
 
         Mockito.doAnswer(invocation -> {
             ServletRequest request = invocation.getArgument(0);
@@ -84,11 +84,11 @@ public class AuthControllerTest {
         Mockito.when(authService.authenticate(req)).thenReturn(resp);
 
         mockMvc.perform(post("/api/auth/login")
-                .with(csrf())
-                .with(user(userDetails))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(req))
-                .accept(MediaType.APPLICATION_JSON))
+                        .with(csrf())
+                        .with(user(userDetails))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.token").isNotEmpty());
@@ -134,10 +134,10 @@ public class AuthControllerTest {
         Mockito.when(authService.register(req)).thenReturn(resp);
 
         mockMvc.perform(post("/api/auth/register")
-                .with(csrf())
+                        .with(csrf())
                         .with(user(userDetails))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(req))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -165,7 +165,7 @@ public class AuthControllerTest {
         RegisterRequest req = new RegisterRequest("Joe", "joefraizer@gmail.com", "123123");
 
         Mockito.doThrow(new UserEmailAlreadyTaken("User with this email already exists"))
-                        .when(authService).register(req);
+                .when(authService).register(req);
 
         mockMvc.perform(post("/api/auth/register")
                         .with(csrf())

@@ -52,16 +52,4 @@ public class OrderController {
         orderService.changeStatus(orderId, status);
         return ResponseEntity.status(HttpStatus.OK).body("Order status changed");
     }
-
-    @PostMapping("/test/{id}")
-    public ResponseEntity<String> testMethod(@PathVariable("id") Long id) {
-        orderService.removeItemFromOrder(id);
-        return ResponseEntity.status(HttpStatus.OK).body("Success");
-    }
-
-    @PostMapping("/test")
-    public ResponseEntity<String> anotherTestMethod(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        orderService.loadItemsByUser(userDetails.user().getId());
-        return ResponseEntity.status(HttpStatus.OK).body("Success");
-    }
 }

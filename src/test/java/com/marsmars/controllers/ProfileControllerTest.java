@@ -23,7 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -59,7 +59,7 @@ public class ProfileControllerTest {
         mockUser.setEnabled(true);
 
         Role role = new Role("ROLE_USER");
-        mockUser.setRoles(List.of(role));
+        mockUser.setRoles(Set.of(role));
 
         Mockito.doAnswer(invocation -> {
             ServletRequest request = invocation.getArgument(0);
@@ -77,12 +77,12 @@ public class ProfileControllerTest {
     @Test
     void show_shouldReturnResponse_whenUserDoesExist() throws Exception {
         UserResponse resp = new UserResponse(1L, "Bobby", "bobbyfiescher@gmail.com",
-                        Collections.singletonList("ROLE_USER"));
+                Collections.singletonList("ROLE_USER"));
         Mockito.when(profileService.showProfile(resp.getId())).thenReturn(resp);
 
         mockMvc.perform(get("/api/profile")
-                .with(user(userDetails))
-                .with(csrf())
+                        .with(user(userDetails))
+                        .with(csrf())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isNotEmpty());
@@ -109,10 +109,10 @@ public class ProfileControllerTest {
         Mockito.doNothing().when(profileService).update(req, 1L);
 
         mockMvc.perform(put("/api/profile")
-                    .with(csrf())
-                    .with(user(userDetails))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(req)))
+                        .with(csrf())
+                        .with(user(userDetails))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Profile was updated"));
     }
@@ -123,10 +123,10 @@ public class ProfileControllerTest {
         Mockito.doNothing().when(profileService).update(req, 1L);
 
         mockMvc.perform(put("/api/profile")
-                .with(csrf())
-                .with(user(userDetails))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(req)))
+                        .with(csrf())
+                        .with(user(userDetails))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -136,9 +136,9 @@ public class ProfileControllerTest {
                 .when(profileService).delete(userDetails.user().getId());
 
         mockMvc.perform(put("/api/profile")
-                .with(csrf())
-                .with(user(userDetails))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .with(csrf())
+                        .with(user(userDetails))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
@@ -149,8 +149,8 @@ public class ProfileControllerTest {
         Mockito.doNothing().when(profileService).delete(1L);
 
         mockMvc.perform(delete("/api/profile")
-                .with(csrf())
-                .with(user(userDetails)))
+                        .with(csrf())
+                        .with(user(userDetails)))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Profile was deleted"));
     }
@@ -161,8 +161,8 @@ public class ProfileControllerTest {
                 .when(profileService).delete(1L);
 
         mockMvc.perform(delete("/api/profile")
-                .with(csrf())
-                .with(user(userDetails)))
+                        .with(csrf())
+                        .with(user(userDetails)))
                 .andExpect(status().isNotFound());
     }
 }

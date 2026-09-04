@@ -1,10 +1,13 @@
 package com.marsmars.services;
 
 import com.marsmars.dtos.user.UserResponse;
+import com.marsmars.models.Order;
+import com.marsmars.models.OrderItem;
 import com.marsmars.models.Role;
 import com.marsmars.models.User;
 import com.marsmars.repositories.RoleRepository;
 import com.marsmars.repositories.UserRepository;
+import com.marsmars.util.OrderStatus;
 import com.marsmars.util.exceptions.UserAlreadyBanOrUnbanned;
 import com.marsmars.util.exceptions.UserNotFound;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,9 +22,12 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,8 +52,8 @@ public class AdminServiceTest {
         user.setPassword("password");
         user.setEmail("johndoe@gmail.com");
         user.setEnabled(true);
-        user.setOrders(Collections.emptyList());
-        user.setRoles(List.of(new Role("ROLE_USER"), new Role("ROLE_ADMIN")));
+        user.setOrders(Collections.emptySet());
+        user.setRoles(Set.of(new Role("ROLE_USER"), new Role("ROLE_ADMIN")));
     }
 
     // FIND ALL
@@ -209,5 +215,80 @@ public class AdminServiceTest {
         UserNotFound ex = assertThrows(UserNotFound.class, () -> adminService.unbanUser(999L));
         assertEquals("User not found for banning", ex.getMessage());
         verify(userRepository, times(1)).findById(999L);
+    }
+
+    @Test
+    void bulkDiscountToUserOrders_UserNotFound_ThrowsException() {
+        when(userRepository.findWithDetailsById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(UserNotFound.class, () -> adminService.bulkDiscountToUserOrders(1L));
+    }
+
+    @Test
+    void bulkDiscountToUserOrders_ValidOrders_AppliesDiscountCorrectly() {
+        OrderItem item1 = new OrderItem();
+        item1.setPriceAtOrder(new BigDecimal("150.00"));
+
+        OrderItem item2 = new OrderItem();
+        item2.setPriceAtOrder(new BigDecimal("300.00"));
+
+        Order order = new Order();
+        order.setStatus(OrderStatus.PENDING);
+        order.setItems(Set.of(item1, item2));
+
+        User user = new User();
+        user.setId(1L);
+        user.setOrders(Set.of(order));
+
+        when(userRepository.findWithDetailsById(1L)).thenReturn(Optional.of(user));
+
+        adminService.bulkDiscountToUserOrders(1L);
+
+        assertEquals(new BigDecimal("100.00"), item1.getPriceAtOrder());
+        assertEquals(new BigDecimal("200.00"), item2.getPriceAtOrder());
+        assertEquals(new BigDecimal("300.00"), order.getTotalSum());
+    }
+
+    @Test
+    void bulkDiscountToUserOrders_IgnoresOrdersWithNonMatchingStatus() {
+        OrderItem item = new OrderItem();
+        item.setPriceAtOrder(new BigDecimal("150.00"));
+
+        Order order = new Order();
+        order.setStatus(OrderStatus.CANCELLED);
+        order.setItems(Set.of(item));
+
+        User user = new User();
+        user.setId(1L);
+        user.setOrders(Set.of(order));
+
+        when(userRepository.findWithDetailsById(1L)).thenReturn(Optional.of(user));
+
+        adminService.bulkDiscountToUserOrders(1L);
+
+        assertEquals(new BigDecimal("150.00"), item.getPriceAtOrder());
+        assertNull(order.getTotalSum());
+    }
+
+    @Test
+    void bulkDiscountToUserOrders_IgnoresOrdersWithDeliveredAt() {
+        OrderItem item = new OrderItem();
+        item.setPriceAtOrder(new BigDecimal("150.00"));
+
+        Order order = new Order();
+        order.setDeliveredAt(LocalDateTime.now());
+        order.setStatus(OrderStatus.PENDING);
+        order.setItems(Set.of(item));
+
+        User user = new User();
+        user.setId(1L);
+        user.setOrders(Set.of(order));
+
+        when(userRepository.findWithDetailsById(1L)).thenReturn(Optional.of(user));
+
+        adminService.bulkDiscountToUserOrders(1L);
+
+        assertEquals(new BigDecimal("150.00"), item.getPriceAtOrder());
+        assertNull(order.getTotalSum());
     }
 }

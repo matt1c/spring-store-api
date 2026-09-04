@@ -30,6 +30,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -66,7 +67,7 @@ public class ProductControllerTest {
 
         Role role = new Role("ROLE_USER");
         Role managerRole = new Role("ROLE_MANAGER");
-        mockUser.setRoles(List.of(role, managerRole));
+        mockUser.setRoles(Set.of(role, managerRole));
 
         Mockito.doAnswer(invocation -> {
             ServletRequest request = invocation.getArgument(0);
@@ -176,7 +177,7 @@ public class ProductControllerTest {
         req.setPrice(BigDecimal.valueOf(10.1));
         req.setQuantity(100);
         req.setCategory(Category.OTHER);
-        
+
         Mockito.doNothing().when(productService).update(req, productId);
 
         mockMvc.perform(put("/api/products/{id}", productId)

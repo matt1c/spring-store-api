@@ -27,6 +27,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -74,14 +75,14 @@ public class OrderServiceTest {
         order.setUser(user);
         order.setCreatedAt(LocalDateTime.now());
         order.setTotalSum(BigDecimal.valueOf(200.00).setScale(2, RoundingMode.HALF_UP));
-        order.setItems(List.of(new OrderItem(1L, order, product,
+        order.setItems(Set.of(new OrderItem(1L, order, product,
                 5, product.getPrice())));
     }
 
     @Test
     void save_shouldSaveOrder_whenOrderIsValid() {
         // Arrange
-        BigDecimal oldPriceAtOrder = order.getItems().getFirst().getPriceAtOrder();
+        BigDecimal oldPriceAtOrder = order.getItems().iterator().next().getPriceAtOrder();
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(productRepository.findById(10L)).thenReturn(Optional.of(product));
 
@@ -102,7 +103,7 @@ public class OrderServiceTest {
         assertEquals(OrderStatus.PENDING, savedOrder.getStatus());
         assertEquals(user, savedOrder.getUser());
         assertEquals(1, savedOrder.getItems().size());
-        assertEquals(oldPriceAtOrder, savedOrder.getItems().getFirst().getPriceAtOrder());
+        assertEquals(oldPriceAtOrder, savedOrder.getItems().iterator().next().getPriceAtOrder());
     }
 
     @Test
@@ -151,7 +152,7 @@ public class OrderServiceTest {
     @Test
     void changeStatus_withCancelStatus() {
         // Arrange
-        OrderItem orderItem = order.getItems().getFirst();
+        OrderItem orderItem = order.getItems().iterator().next();
         int expectedQuantity = product.getQuantity() + orderItem.getQuantity();
         when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
 

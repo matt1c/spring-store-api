@@ -27,7 +27,9 @@ public class AdminController {
     }
 
     @GetMapping("/users/{id}")
-    public UserResponse findOne(@PathVariable("id") Long id) {return adminService.findOne(id);}
+    public UserResponse findOne(@PathVariable("id") Long id) {
+        return adminService.findOne(id);
+    }
 
     @PostMapping("/users/{id}/ban")
     public ResponseEntity<String> userBan(@PathVariable("id") Long id) {
@@ -46,5 +48,11 @@ public class AdminController {
                                                    @RequestBody @Valid RoleRequest request) {
         adminService.assignRole(id, request);
         return ResponseEntity.status(HttpStatus.OK).body("Role has been assigned to user");
+    }
+
+    @PostMapping("/users/{id}/bulk-discount")
+    public ResponseEntity<String> bulkDiscountToUserOrders(@PathVariable("id") Long id) {
+        adminService.bulkDiscountToUserOrders(id);
+        return ResponseEntity.status(HttpStatus.OK).body("Bulk discount has done");
     }
 }

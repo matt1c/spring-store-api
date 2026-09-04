@@ -2,10 +2,13 @@ package com.marsmars.services;
 
 import com.marsmars.dtos.role.RoleRequest;
 import com.marsmars.dtos.user.UserResponse;
+import com.marsmars.models.Order;
+import com.marsmars.models.OrderItem;
 import com.marsmars.models.Role;
 import com.marsmars.models.User;
 import com.marsmars.repositories.RoleRepository;
 import com.marsmars.repositories.UserRepository;
+import com.marsmars.util.OrderStatus;
 import com.marsmars.util.exceptions.RoleNotFound;
 import com.marsmars.util.exceptions.UserAlreadyBanOrUnbanned;
 import com.marsmars.util.exceptions.UserNotFound;
@@ -14,6 +17,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Set;
 
 @Service
 public class AdminService {
@@ -62,6 +70,32 @@ public class AdminService {
             throw new UserRoleAlreadyTaken("User already have this role");
         user.getRoles().add(role);
         userRepository.save(user);
+    }
+
+    @Transactional
+    public void bulkDiscountToUserOrders(Long userId) {
+        User user = userRepository.findWithDetailsById(userId)
+                .orElseThrow(() -> new UserNotFound("User not found"));
+        Set<Order> orders = user.getOrders();
+
+        for (Order order : orders) {
+            if (order.getDeliveredAt() == null && order.getStatus() != OrderStatus.CANCELLED) {
+                BigDecimal newTotalSum = BigDecimal.ZERO;
+
+                if (order.getItems() != null) {
+                    for (OrderItem item : order.getItems()) {
+                        if (item.getPriceAtOrder() != null) {
+                            BigDecimal newPrice = item.getPriceAtOrder()
+                                    .divide(new BigDecimal("1.5"), 2, RoundingMode.HALF_UP);
+
+                            item.setPriceAtOrder(newPrice);
+                            newTotalSum = newTotalSum.add(newPrice);
+                        }
+                    }
+                }
+                order.setTotalSum(newTotalSum);
+            }
+        }
     }
 
     private UserResponse toResponse(User user) {

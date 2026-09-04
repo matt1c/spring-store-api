@@ -27,7 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -67,7 +67,7 @@ public class AdminControllerTest {
 
         Role role = new Role("ROLE_USER");
         Role adminRole = new Role("ROLE_ADMIN");
-        mockUser.setRoles(List.of(role, adminRole));
+        mockUser.setRoles(Set.of(role, adminRole));
 
         doAnswer(invocation -> {
             ServletRequest request = invocation.getArgument(0);
@@ -271,6 +271,28 @@ public class AdminControllerTest {
                 .andExpect(status().isForbidden())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message").value("Access Denied"));
+
+        verifyNoInteractions(adminService);
+    }
+
+    @Test
+    void bulkDiscountToUserOrders_shouldReturnOk() throws Exception {
+        mockMvc.perform(post("/api/admins/users/{id}/bulk-discount", 1L)
+                        .with(csrf())
+                        .contentType(MediaType.TEXT_PLAIN_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN_VALUE))
+                .andExpect(content().string("Bulk discount has done"));
+
+        verify(adminService, times(1)).bulkDiscountToUserOrders(1L);
+    }
+
+    @Test
+    @WithMockUser(roles = {"USER"})
+    void bulkDiscountToUserOrders_shouldThrowForbidden_whenUserNotAdmin() throws Exception {
+        mockMvc.perform(post("/api/admins/users/{id}/bulk-discount", 1L)
+                        .with(csrf()))
+                .andExpect(status().isForbidden());
 
         verifyNoInteractions(adminService);
     }
