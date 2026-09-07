@@ -115,13 +115,6 @@
             <version>9.1.2.Final</version>
             <scope>compile</scope>
         </dependency>
-
-        <!-- Source: https://mvnrepository.com/artifact/org.springframework.security.oauth/spring-security-oauth -->
-        <dependency>
-            <groupId>org.springframework.security.oauth.boot</groupId>
-            <artifactId>spring-security-oauth2-autoconfigure</artifactId>
-            <version>2.0.0.RELEASE</version>
-        </dependency>
     </dependencies>
 
     <build>

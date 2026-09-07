@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
-            SQLException.class, OutOfMemoryError.class, NullPointerException.class,
+            SQLException.class, NullPointerException.class,
             ArithmeticException.class, IndexOutOfBoundsException.class,
             NumberFormatException.class, DataAccessException.class, ClassNotFoundException.class,
             DataIntegrityViolationException.class
@@ -80,7 +80,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({UserEmailAlreadyTaken.class, UserRoleAlreadyTaken.class,
             InsufficientStockException.class, UserPasswordIsAlreadyValid.class, UserAlreadyBanOrUnbanned.class})
     public ResponseEntity<ApiErrorResponse> handlerConflictExceptions(RuntimeException e) {
-        System.out.println("EXCEPTION MESSAGE: " + e.getMessage());
         ApiErrorResponse resp = new ApiErrorResponse(
                 e.getMessage(),
                 LocalDateTime.now(),
